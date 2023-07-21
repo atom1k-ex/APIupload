@@ -7,7 +7,7 @@ from googleapiclient.http import MediaIoBaseUpload
 import io
 from pymongo import MongoClient
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 
 app = FastAPI()
 
@@ -37,35 +37,36 @@ service = build('sheets', 'v4', credentials=credentials)
 
 
 class Item(BaseModel):
-    Dcontact: Optional[int] = None
-    ParentName: Optional[str] = None
-    ChildName: Optional[str] = None
-    Gender: Optional[str] = None
-    PContact: Optional[int] = None
-    CAge: Optional[int] = None
-    CHeight: Optional[int] = None
-    Cweight: Optional[int] = None
-    HCPName: Optional[str] = None
-    ABMName: Optional[str] = None
-    PharmaName: Optional[str] = None
-    Quantity: Optional[int] = None
-    child_stunted: Optional[str] = None
-    child_wasted: Optional[str] = None
-    child_underweight: Optional[str] = None
-    cal_intake: Optional[int] = None
-    protein_intake: Optional[int] = None
-    micro_intake_z: Optional[int] = None
-    micro_intake_i: Optional[int] = None
-    micro_intake_v: Optional[int] = None
-    calcium_intake: Optional[int] = None
-    sugar_intake: Optional[int] = None
-    child_picky: Optional[int] = None
-    diet_details: Optional[str] = None
-    diagnosis: Optional[str] = None
-    present_symptoms: Optional[str] = None
-    Hospital_adm_in_year: Optional[int] = None
-    no_of_clinic_in_year: Optional[int] = None
-    no_of_days_of_ab_school: Optional[int] = None
+    Dcontact: Optional[Union[int, str]] = None
+    ParentName: Optional[Union[int, str]] = None
+    ChildName: Optional[Union[int, str]] = None
+    Gender: Optional[Union[int, str]] = None
+    PContact: Optional[Union[int, str]] = None
+    CAge: Optional[Union[int, str]] = None
+    CHeight: Optional[Union[int, str]] = None
+    Cweight: Optional[Union[int, str]] = None
+    HCPName: Optional[Union[int, str]] = None
+    ABMName: Optional[Union[int, str]] = None
+    PharmaName: Optional[Union[int, str]] = None
+    Quantity: Optional[Union[int, str]] = None
+    child_stunted: Optional[Union[int, str]] = None
+    child_wasted: Optional[Union[int, str]] = None
+    child_underweight: Optional[Union[int, str]] = None
+    cal_intake: Optional[Union[int, str]] = None
+    protein_intake: Optional[Union[int, str]] = None
+    micro_intake_z: Optional[Union[int, str]] = None
+    micro_intake_i: Optional[Union[int, str]] = None
+    micro_intake_v: Optional[Union[int, str]] = None
+    calcium_intake: Optional[Union[int, str]] = None
+    sugar_intake: Optional[Union[int, str]] = None
+    child_picky: Optional[Union[int, str]] = None
+    diet_details: Optional[Union[int, str]] = None
+    diagnosis: Optional[Union[int, str]] = None
+    present_symptoms: Optional[Union[int, str]] = None
+    Hospital_adm_in_year: Optional[Union[int, str]] = None
+    no_of_clinic_in_year: Optional[Union[int, str]] = None
+    no_of_days_of_ab_school: Optional[Union[int, str]] = None
+
 
 
 class UploadedImage(BaseModel):
@@ -75,37 +76,37 @@ class UploadedImage(BaseModel):
 
 @app.post("/upload-data")
 async def upload_data(
-        Dcontact: Optional[int] = Form(None),
-        ParentName: Optional[str] = Form(None),
-        ChildName: Optional[str] = Form(None),
-        Gender: Optional[str] = Form(None),
-        PContact: Optional[int] = Form(None),
-        CAge: Optional[int] = Form(None),
-        CHeight: Optional[int] = Form(None),
-        Cweight: Optional[int] = Form(None),
+        Dcontact: Optional[Union[int, str]] = Form(None),
+        ParentName: Optional[Union[int, str]] = Form(None),
+        ChildName: Optional[Union[int, str]] = Form(None),
+        Gender: Optional[Union[int, str]] = Form(None),
+        PContact: Optional[Union[int, str]] = Form(None),
+        CAge: Optional[Union[int, str]] = Form(None),
+        CHeight: Optional[Union[int, str]] = Form(None),
+        Cweight: Optional[Union[int, str]] = Form(None),
         Pimage: Optional[UploadFile] = File(None),
-        HCPName: Optional[str] = Form(None),
-        ABMName: Optional[str] = Form(None),
-        PharmaName: Optional[str] = Form(None),
-        Quantity: Optional[int] = Form(None),
+        HCPName: Optional[Union[int, str]] = Form(None),
+        ABMName: Optional[Union[int, str]] = Form(None),
+        PharmaName: Optional[Union[int, str]] = Form(None),
+        Quantity: Optional[Union[int, str]] = Form(None),
         Popimage: Optional[UploadFile] = File(None),
-        child_stunted: Optional[str] = Form(None),
-        child_wasted: Optional[str] = Form(None),
-        child_underweight: Optional[str] = Form(None),
-        cal_intake: Optional[int] = Form(None),
-        protein_intake: Optional[int] = Form(None),
-        micro_intake_z: Optional[int] = Form(None),
-        micro_intake_i: Optional[int] = Form(None),
-        micro_intake_v: Optional[int] = Form(None),
-        calcium_intake: Optional[int] = Form(None),
-        sugar_intake: Optional[int] = Form(None),
-        child_picky: Optional[str] = Form(None),
-        diet_details: Optional[str] = Form(None),
-        diagnosis: Optional[str] = Form(None),
-        present_symptoms: Optional[str] = Form(None),
-        Hospital_adm_in_year: Optional[int] = Form(None),
-        no_of_clinic_in_year: Optional[int] = Form(None),
-        no_of_days_of_ab_school: Optional[int] = Form(None)
+        child_stunted: Optional[Union[int, str]] = Form(None),
+        child_wasted: Optional[Union[int, str]] = Form(None),
+        child_underweight: Optional[Union[int, str]] = Form(None),
+        cal_intake: Optional[Union[int, str]] = Form(None),
+        protein_intake: Optional[Union[int, str]] = Form(None),
+        micro_intake_z: Optional[Union[int, str]] = Form(None),
+        micro_intake_i: Optional[Union[int, str]] = Form(None),
+        micro_intake_v: Optional[Union[int, str]] = Form(None),
+        calcium_intake: Optional[Union[int, str]] = Form(None),
+        sugar_intake: Optional[Union[int, str]] = Form(None),
+        child_picky: Optional[Union[int, str]] = Form(None),
+        diet_details: Optional[Union[int, str]] = Form(None),
+        diagnosis: Optional[Union[int, str]] = Form(None),
+        present_symptoms: Optional[Union[int, str]] = Form(None),
+        Hospital_adm_in_year: Optional[Union[int, str]] = Form(None),
+        no_of_clinic_in_year: Optional[Union[int, str]] = Form(None),
+        no_of_days_of_ab_school: Optional[Union[int, str]] = Form(None)
 ):
     # Read the contents of the uploaded image file
     Pimage_data = await Pimage.read() if Pimage is not None else None
@@ -162,6 +163,7 @@ async def upload_data(
     ).execute()
 
     return JSONResponse({"message": "Data and Image uploaded successfully"})
+
 
 
 class Register(BaseModel):
