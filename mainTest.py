@@ -8,32 +8,12 @@ import io
 from pymongo import MongoClient
 from datetime import datetime
 from typing import List, Optional, Union
-
+import config
 app = FastAPI()
 
-# MongoDB connection settings
-mongo_client = MongoClient(
-    "mongodb+srv://Anuradha_24:veX84lLLxoNu7KxJ@cluster0.f0a4v6c.mongodb.net/?retryWrites=true&w=majority")
-db = mongo_client["userData"]
-collection = db["Users"]
-
-# Load credentials from the downloaded JSON file
-credentials = service_account.Credentials.from_service_account_file("./googleauthkey1.json",
-                                                                    scopes=[
-                                                                        'https://www.googleapis.com/auth/spreadsheets',
-                                                                        'https://www.googleapis.com/auth/drive']
-                                                                    )
-
-# Google Drive folder ID
-folder_id = "1zvwHTvXWiNtqf_fKUXV1TT-bAWO_osT6"
-
-# Google Sheets document ID
-spreadsheet_id = "1ohoeiDUwStakeO6VtUnxwySL6zHvc_gyl6TjLI6dq5Q"
-spreadsheet_id1 = "1DjP5PDdvtqecfh2YTXZHGDSQM5jgO_jUuIVBpBgLvWM"
-cell_range = 'Sheet1!A2'
 
 # Create a service object for the Google Sheets API
-service = build('sheets', 'v4', credentials=credentials)
+service = build('sheets', 'v4', credentials=config.credentials)
 
 
 class Item(BaseModel):
@@ -113,14 +93,14 @@ async def upload_data(
     Popimage_data = await Popimage.read() if Popimage is not None else None
 
     # Upload the image to Google Drive
-    drive_service = build('drive', 'v3', credentials=credentials)
+    drive_service = build('drive', 'v3', credentials=config.credentials)
     file_id = None
     file_id1 = None
 
     if Pimage_data is not None:
         file_metadata = {
             'name': Pimage.filename,
-            'parents': [folder_id]
+            'parents': [config.folder_id]
         }
         media = MediaIoBaseUpload(io.BytesIO(Pimage_data), mimetype=Pimage.content_type)
         file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
@@ -129,7 +109,7 @@ async def upload_data(
     if Popimage_data is not None:
         file_metadata1 = {
             'name': Popimage.filename,
-            'parents': [folder_id]
+            'parents': [config.folder_id]
         }
         media1 = MediaIoBaseUpload(io.BytesIO(Popimage_data), mimetype=Popimage.content_type)
         file1 = drive_service.files().create(body=file_metadata1, media_body=media1, fields='id').execute()
@@ -156,8 +136,8 @@ async def upload_data(
         'values': values
     }
     service.spreadsheets().values().append(
-        spreadsheetId=spreadsheet_id,
-        range=cell_range,
+        spreadsheetId=config.spreadsheet_id,
+        range=config.cell_range,
         valueInputOption='RAW',
         body=body
     ).execute()
@@ -168,7 +148,7 @@ async def upload_data(
 
 class Register(BaseModel):
     Name: str
-    PhoneNumber: int
+    PhoneNumber: str
     Password: str
     City: str
     Team: str
@@ -185,7 +165,7 @@ async def register_data(register: Register):
     }
 
     # Insert the item into the MongoDB collection
-    result = collection.insert_one(item_data)
+    result = config.collection.insert_one(item_data)
 
     # Return the inserted document ID
     return {"message": "Item created", "item_id": str(result.inserted_id)}
@@ -193,30 +173,30 @@ async def register_data(register: Register):
 
 class UserDetails(BaseModel):
     Name: str
-    PhoneNumber: int
+    PhoneNumber: str
     Password: str
     City: str
     Team: str
 
 
 @app.post("/GetUserDetails")
-async def Get_details(phone: int):
-    result = collection.find({"PhoneNumber": phone})
+async def Get_details(phone: str):
+    result = config.collection.find({"PhoneNumber": phone})
     data = [UserDetails(**data) for data in result]
     return data
 
 @app.post("/login")
-async def Get_details(phone: int = Body(...), password: str = Body(...)) :
+async def Get_details(phone: str = Body(...), password: str = Body(...)) :
 
-    result = list(collection.find({"PhoneNumber": phone, "Password": password}))
+    result = list(config.collection.find({"PhoneNumber": phone, "Password": password}))
     if len(result) == 0:
         return {'Message': 'Incorrect Phone Number or Password'}
     else:
         return {'Message': 'Welcome to the app'}
 
 @app.post("/CheckUserExist")
-async def check_details(phone: int):
-    result = list(collection.find({"PhoneNumber": phone}))
+async def check_details(phone: str):
+    result = list(config.collection.find({"PhoneNumber": phone}))
 
     # Check if the result is empty
     if len(result) == 0:
@@ -227,43 +207,53 @@ async def check_details(phone: int):
 
 @app.get("/viewallusers")
 async def view_all_users():
-    result = collection.find({}, {"_id": 0})  # Exclude the _id field
+    result = config.collection.find({}, {"_id": 0})  # Exclude the _id field
     return list(result)
 
 
 @app.delete("/deleteuser")
-async def delete_user(phone: int):
-    result = collection.delete_one({"PhoneNumber": phone})
+async def delete_user(phone: str):
+    result = config.collection.delete_one({"PhoneNumber": phone})
     if result.deleted_count:
         return {"message": "User deleted successfully"}
     else:
         return {"message": "User not found"}
 
 
+
+
+
 class History(BaseModel):
-    PContact: int
+    PContact: Union[int, str]
     ChildName: str
 
-
-
-@app.post("/history")
-async def get_records_by_phone_number(request_body: dict = Body(...)) -> List[History]:
-    phone_number = request_body.get("phone_number")
+@app.post("/history", response_model=List[History])
+async def get_records_by_phone_number(phone_number: str = Body(...)):
     # Retrieve the data from the Google Sheet
     result = service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id,
-        range='Sheet1'
+        spreadsheetId=config.spreadsheet_id,
+        range='Sheet1'  # Replace with the actual sheet name or range containing the data
     ).execute()
 
     values = result.get('values', [])
 
-    variables = values[0] if values else []
+    if not values or len(values) < 2:
+        return []
+
+    variables = values[0]
+
+    # Find the index of "Dcontact" in the header row
+    try:
+        dcontact_index = variables.index("Dcontact")
+    except ValueError:
+        # "Dcontact" field not found in the header row
+        return []
 
     # Filter records by phone number
     filtered_records = [
         dict(zip(variables, row))
         for row in values[1:]
-        if row and str(row[variables.index("Dcontact")]) == phone_number
+        if row and len(row) > dcontact_index and str(row[dcontact_index]) == phone_number
     ]
 
     # Sort records by timestamp in descending order
@@ -273,53 +263,15 @@ async def get_records_by_phone_number(request_body: dict = Body(...)) -> List[Hi
     top_records = sorted_records[:20]
 
     # Create instances of History model
-    records = [
-        History(**record)  # Adjust the fields as per your sheet's structure
-        for record in top_records
-    ]
+    records = [History(**record) for record in top_records]
 
     return records
 
-
-class Uplaoddatatest(BaseModel):
-    ParentName: str
-
-
-@app.post("/upload-data-test")
-async def upload_data_test(uplaod: Uplaoddatatest,
-
-                           ):
-    # Read the contents of the uploaded image file
-    # Read the contents of the uploaded image file
-    # Read the contents of the uploaded image file
-
-    values = [
-        [
-            uplaod.ParentName
-        ]
-
-
-
-
-
-        
-    ]
-    body = {
-        'values': values
-    }
-    service.spreadsheets().values().append(
-        spreadsheetId=spreadsheet_id,
-        range=cell_range,
-        valueInputOption='RAW',
-        body=body
-    ).execute()
-
-    return JSONResponse({"message": "Data  uploaded successfully"})
 class PhoneNumber(BaseModel):
-    phone_number: int
+    phone_number: str
 @app.post("/check_phone_number")
 async def check_phone_number(phone_number: PhoneNumber):
-    result = collection.find_one({"PhoneNumber": phone_number.phone_number})
+    result = config.collection.find_one({"PhoneNumber": phone_number.phone_number})
     if result:
         return {"message": "Login Successful"}
     else:
