@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import List, Optional, Union
 import config
 from fastapi import FastAPI, Body, HTTPException
+from fastapi import FastAPI, Form, File, UploadFile
+from pydantic import BaseModel,ValidationError,validator
 # Create the FastAPI app
 app = FastAPI(docs_url=None, redoc_url=None)
 
@@ -49,7 +51,11 @@ class Item(BaseModel):
     Hospital_adm_in_year: Optional[Union[int, str]] = None
     no_of_clinic_in_year: Optional[Union[int, str]] = None
     no_of_days_of_ab_school: Optional[Union[int, str]] = None
-
+    @validator('CHeight', 'Cweight', pre=True)
+    def empty_to_none(cls, v):
+        if v == "":
+            return None
+        return v
 
 
 class UploadedImage(BaseModel):
