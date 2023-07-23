@@ -11,7 +11,7 @@ from typing import List, Optional, Union
 import config
 # Create the FastAPI app
 app = FastAPI(docs_url=None, redoc_url=None)
-
+#app = FastAPI()
 
 # Create a service object for the Google Sheets API
 service = build('sheets', 'v4', credentials=config.credentials)
@@ -24,8 +24,8 @@ class Item(BaseModel):
     Gender: Optional[Union[int, str]] = None
     PContact: Optional[Union[int, str]] = None
     CAge: Optional[Union[int, str]] = None
-    CHeight: Optional[Union[int, str]] = None
-    Cweight: Optional[Union[int, str]] = None
+    CHeight: Optional[int] = None
+    Cweight: Optional[int] = None
     HCPName: Optional[Union[int, str]] = None
     ABMName: Optional[Union[int, str]] = None
     PharmaName: Optional[Union[int, str]] = None
@@ -63,8 +63,8 @@ async def upload_data(
         Gender: Optional[Union[int, str]] = Form(None),
         PContact: Optional[Union[int, str]] = Form(None),
         CAge: Optional[Union[int, str]] = Form(None),
-        CHeight: Optional[Union[int, str]] = Form(None),
-        Cweight: Optional[Union[int, str]] = Form(None),
+        CHeight: Optional[int] = Form(None),
+        Cweight: Optional[int] = Form(None),
         Pimage: Optional[UploadFile] = File(None),
         HCPName: Optional[Union[int, str]] = Form(None),
         ABMName: Optional[Union[int, str]] = Form(None),
@@ -124,7 +124,7 @@ async def upload_data(
     values = [
         [
             timestamp, Dcontact, ParentName, ChildName, Gender,
-            PContact, CAge, CHeight, Cweight, bmi, file_id,
+            PContact, CAge, CHeight, Cweight, file_id,
             HCPName, ABMName, PharmaName, Quantity, file_id1,
             child_stunted, child_wasted, child_underweight, cal_intake,
             protein_intake, micro_intake_z, micro_intake_i, micro_intake_v,
