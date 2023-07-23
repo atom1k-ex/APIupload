@@ -9,8 +9,10 @@ from pymongo import MongoClient
 from datetime import datetime
 from typing import List, Optional, Union
 import config
+from fastapi import FastAPI, Body, HTTPException
 # Create the FastAPI app
 app = FastAPI(docs_url=None, redoc_url=None)
+
 #app = FastAPI()
 
 # Create a service object for the Google Sheets API
@@ -191,9 +193,9 @@ async def Get_details(phone: str = Body(...), password: str = Body(...)) :
 
     result = list(config.collection.find({"PhoneNumber": phone, "Password": password}))
     if len(result) == 0:
-        return {'Message': 'Incorrect Phone Number or Password'}
+        raise HTTPException(status_code=404, detail='Incorrect Phone Number or Password')
     else:
-        return {'Message': 'Welcome to the app'}
+        return JSONResponse(content={'Message': 'Welcome to the app'}, status_code=200)
 
 @app.post("/CheckUserExist")
 async def check_details(phone: str):
@@ -201,9 +203,9 @@ async def check_details(phone: str):
 
     # Check if the result is empty
     if len(result) == 0:
-        return {'Message': 'User not found'}
+        raise HTTPException(status_code=404, detail='User Not Found')
     else:
-        return {'Message': 'Welcome to the app'}
+        return JSONResponse(content={'Message': 'Welcome to the app'}, status_code=200)
 
 
 @app.get("/viewallusers")
@@ -216,9 +218,9 @@ async def view_all_users():
 async def delete_user(phone: str):
     result = config.collection.delete_one({"PhoneNumber": phone})
     if result.deleted_count:
-        return {"message": "User deleted successfully"}
+        return JSONResponse(content={'Message': 'User deleted successfully'}, status_code=200)
     else:
-        return {"message": "User not found"}
+        raise HTTPException(status_code=404, detail='User Not Found')
 
 
 
@@ -274,6 +276,6 @@ class PhoneNumber(BaseModel):
 async def check_phone_number(phone_number: PhoneNumber):
     result = config.collection.find_one({"PhoneNumber": phone_number.phone_number})
     if result:
-        return {"message": "Login Successful"}
+        return JSONResponse(content={'Message': 'Login Successful'}, status_code=200)
     else:
-        return {"message": "User not Registered"}
+        raise HTTPException(status_code=404, detail='User Not Registered')
