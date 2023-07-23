@@ -9,7 +9,8 @@ from pymongo import MongoClient
 from datetime import datetime
 from typing import List, Optional, Union
 import config
-app = FastAPI()
+# Create the FastAPI app
+app = FastAPI(docs_url=None, redoc_url=None)
 
 
 # Create a service object for the Google Sheets API
